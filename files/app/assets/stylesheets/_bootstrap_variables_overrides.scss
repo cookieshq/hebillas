@@ -1,0 +1,21 @@
+//----------------
+// Visit https://github.com/anjlab/bootstrap-rails/blob/master/app/assets/stylesheets/twitter/bootstrap/_variables.scss
+// for more variables
+//----------------
+
+$gray:             lighten(#000, 33.5%) !default; // #555
+$gray-darker:      lighten(#000, 13.5%) !default; // #222
+$gray-lighter:     lighten(#000, 93.5%) !default; // #eee
+$gray-light:       lighten(#000, 60%) !default; // #999
+$gray-dark:        lighten(#000, 20%) !default; // #333
+
+$brand-primary:    #428bca !default;
+$brand-success:    #5cb85c !default;
+$brand-warning:    #f0ad4e !default;
+$brand-danger:     #d9534f !default;
+$brand-info:       #5bc0de !default;
+$body-bg:          #ffffff !default;
+$text-color:       $gray-dark !default;
+
+$link-color:       $brand-primary !default;
+$link-hover-color: darken($link-color, 15%) !default;
