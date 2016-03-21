@@ -52,8 +52,8 @@
 ######################################
 require 'securerandom'
 
-LATEST_STABLE_RUBY = '2.1.3'
-CURRENT_RUBY = RUBY_VERSION
+# LATEST_STABLE_RUBY = '2.1.3'
+# CURRENT_RUBY = RUBY_VERSION
 
 def source_paths
   Array(super) + [File.join(File.expand_path(File.dirname(__FILE__)),'files')]
@@ -151,7 +151,7 @@ install_dotenv      = ask_with_default_yes("Do you want to install Dotenv [Y/n]"
 ######################################
 
 # Specify Ruby version
-insert_into_file 'Gemfile', "\nruby '#{CURRENT_RUBY}'", after: "source 'https://rubygems.org'\n"
+# insert_into_file 'Gemfile', "\nruby '#{CURRENT_RUBY}'", after: "source 'https://rubygems.org'\n"
 
 # Change sqlite3 for pg
 gsub_file "Gemfile", /^# Use sqlite3 as the database for Active Record$/, "# Use Postgre as the database for Active Record"
