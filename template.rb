@@ -154,8 +154,8 @@ install_dotenv      = ask_with_default_yes("Do you want to install Dotenv [Y/n]"
 # insert_into_file 'Gemfile', "\nruby '#{CURRENT_RUBY}'", after: "source 'https://rubygems.org'\n"
 
 # Change sqlite3 for pg
-gsub_file "Gemfile", /^# Use sqlite3 as the database for Active Record$/, "# Use Postgre as the database for Active Record"
-gsub_file "Gemfile", /^gem\s+["']sqlite3["'].*$/, "gem 'pg'"
+# gsub_file "Gemfile", /^# Use sqlite3 as the database for Active Record$/, "# Use Postgre as the database for Active Record"
+# gsub_file "Gemfile", /^gem\s+["']sqlite3["'].*$/, "gem 'pg'"
 
 uncomment_lines "Gemfile", /capistrano-rails/ if capistrano_deploy
 
