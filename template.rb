@@ -142,7 +142,6 @@ install_paperclip   = ask_with_default_yes("Do you want to install Paperclip? [Y
 install_airbrake    = ask_with_default_yes("Do you want to install Airbrake? [Y/n]")
 install_vcr         = ask_with_default_yes("Do you want to install VCR? [Y/n]")
 install_guard_rspec = ask_with_default_yes("Do you want to install Guard-Rspec? [Y/n]")
-install_dotenv      = ask_with_default_yes("Do you want to install Dotenv [Y/n]")
 
 ######################################
 #                                    #
@@ -186,25 +185,14 @@ gem_group :development do
 end
 
 gem_group :development, :test do
-  gem 'rspec'
-  gem 'rspec-rails'
   gem 'guard-rspec', require: false if install_guard_rspec
-  gem 'factory_girl_rails'
   gem 'faker'
-  gem 'dotenv-rails' if install_dotenv
 end
 
 gem_group :test do
   gem 'capybara'
   gem 'capybara-email'
-  gem 'database_cleaner'
-  gem 'launchy'
   gem 'email_spec'
-  gem 'capybara-webkit'
-  gem 'timecop'
-  gem 'shoulda-matchers', require: false
-  gem 'formulaic'
-  gem 'webmock'
   gem 'vcr' if install_vcr
 end
 
