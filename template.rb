@@ -164,8 +164,8 @@ gem 'rails_12factor', group: :production if heroku_deploy
 
 gem 'haml-rails'
 gem 'bootstrap-sass'
-gem 'autoprefixer-rails'
-gem 'simple_form'
+# gem 'autoprefixer-rails'
+# gem 'simple_form'
 gem 'airbrake' if install_airbrake
 
 gem 'activeadmin', github: 'gregbell/active_admin' if install_active_admin
