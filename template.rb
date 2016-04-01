@@ -137,6 +137,8 @@ switch_to_haml      = ask_with_default_yes("Do you want to use HAML instead of E
 switch_to_bootstrap = ask_with_default_yes("Do you want to remove Bourbon/Neat and use Bootstrap? [Y/n]")
 # switch_to_coffeescript = ask_with_default_yes("Do you want to remove EC6 and install CoffeeScript? [Y/n]")
 
+create_tmuxinator_file = ask_with_default_no("Do you want to create a tmuxinator file? [y/N]")
+
 ######################################
 #                                    #
 # Gemfile manipulation               #
@@ -494,8 +496,6 @@ if create_database
   say("\nWhat you see above is the first failing test of the project. It fails because you have no routes defined, so the root_path is not visitable. This means everything is set and you can start working (perhaps in making this test pass).\n\n", "\e[33m")
 
 end
-
-create_tmuxinator_file = ask_with_default_no("Do you want to create a tmuxinator file? [y/N]")
 
 if create_tmuxinator_file
   add_tmuxinator_file
