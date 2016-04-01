@@ -52,8 +52,8 @@
 ######################################
 require 'securerandom'
 
-# LATEST_STABLE_RUBY = '2.1.3'
-# CURRENT_RUBY = RUBY_VERSION
+LATEST_STABLE_RUBY = '2.3.0'
+CURRENT_RUBY = RUBY_VERSION
 
 def source_paths
   Array(super) + [File.join(File.expand_path(File.dirname(__FILE__)),'files')]
@@ -129,19 +129,10 @@ if install_devise
   install_active_admin  = ask_with_default_yes("Do you want to install Active Admin? [Y/n]")
 end
 
-heroku_deploy = ask_with_default_yes("Do you need to deploy this app on Heroku? [Y/n]")
-
-if heroku_deploy
-  capistrano_deploy = false
-else
-  say("\n\tWe will install Capistrano for deployments, then.\n\n", "\e[33m")
-  capistrano_deploy = true
-end
-
-install_paperclip   = ask_with_default_yes("Do you want to install Paperclip? [Y/n]")
-install_airbrake    = ask_with_default_yes("Do you want to install Airbrake? [Y/n]")
-install_vcr         = ask_with_default_yes("Do you want to install VCR? [Y/n]")
-install_guard_rspec = ask_with_default_yes("Do you want to install Guard-Rspec? [Y/n]")
+install_paperclip      = ask_with_default_yes("Do you want to install Paperclip? [Y/n]")
+install_vcr            = ask_with_default_yes("Do you want to install VCR? [Y/n]")
+install_guard_rspec    = ask_with_default_yes("Do you want to install Guard-Rspec? [Y/n]")
+# switch_to_coffeescript = ask_with_default_yes("Do you want to remove EC6 and install CoffeeScript? [Y/n]")
 
 ######################################
 #                                    #
@@ -149,35 +140,27 @@ install_guard_rspec = ask_with_default_yes("Do you want to install Guard-Rspec? 
 #                                    #
 ######################################
 
-# Specify Ruby version
-# insert_into_file 'Gemfile', "\nruby '#{CURRENT_RUBY}'", after: "source 'https://rubygems.org'\n"
-
-# Change sqlite3 for pg
-# gsub_file "Gemfile", /^# Use sqlite3 as the database for Active Record$/, "# Use Postgre as the database for Active Record"
-# gsub_file "Gemfile", /^gem\s+["']sqlite3["'].*$/, "gem 'pg'"
-
-uncomment_lines "Gemfile", /capistrano-rails/ if capistrano_deploy
+# Remove EC6 and put back CoffeeScript
+# if switch_to_coffeescript
+#   gsub_file('Gemfile', /^gem "sprockets"$/, '')
+#   gsub_file('Gemfile', /^gem "sprockets-es6"$/, '')
+#   gem "coffee-rails", "~> 4.1.0"
+# end
 
 gem 'devise' if install_devise
-gem 'rails_12factor', group: :production if heroku_deploy
-
 gem 'haml-rails'
+
+# Remove bourbon/neat/refills
+gsub_file('Gemfile', /^gem "bourbon, "5.0.0.beta.3"$/, '')
+gsub_file('Gemfile', /^gem "neat", "~> 1.7.0"$/, '')
+gsub_file('Gemfile', /^gem "refills"/, '')
 gem 'bootstrap-sass'
-# gem 'autoprefixer-rails'
-# gem 'simple_form'
-gem 'airbrake' if install_airbrake
 
 gem 'activeadmin', github: 'gregbell/active_admin' if install_active_admin
 gem 'paperclip' if install_paperclip
 gem "roadie", '~> 2.4.3'
 
 gem_group :development do
-  if capistrano_deploy
-    gem 'capistrano'
-    gem 'capistrano-rvm'
-    gem 'capistrano-bundler'
-  end
-
   gem 'mailcatcher', require: false
   gem 'html2haml', require: false if generate_devise_views
   gem 'guard-livereload', require: false
@@ -202,7 +185,6 @@ end
 #                                    #
 ######################################
 run 'bundle install'
-run 'bundle exec cap install' if capistrano_deploy
 
 ######################################
 #                                    #
@@ -249,31 +231,13 @@ insert_into_file ".gitignore", after: "/config/secrets.yml\n" do
   GITIGNORE
 end if install_paperclip
 
-if install_dotenv
-  insert_into_file ".gitignore", after: "/config/secrets.yml\n" do
-    <<-GITIGNORE
+
+insert_into_file ".gitignore", after: "/config/secrets.yml\n" do
+<<-GITIGNORE
 
 # Ignore dotenv files
-.env
-    GITIGNORE
-  end
-
-  create_file "env.yml.example" do
-    <<-DOTENV
-# Use dotenv to keep your environment variables safe and separated
-# Read more at:
-# https://github.com/bkeepers/dotenv/blob/master/README.md
-# Remember to configure manually dotenv in your app!
-# Once finished, remember to copy this file into a new one called just .env
-    DOTENV
-  end
-end
-
-if capistrano_deploy
-  uncomment_lines 'Capfile', /'capistrano\/rvm'/
-  uncomment_lines 'Capfile', /'capistrano\/bundler'/
-  uncomment_lines 'Capfile', /capistrano\/rails\/assets/
-  uncomment_lines 'Capfile', /capistrano\/rails\/migrations/
+.env.local
+GITIGNORE
 end
 
 inside "app" do
@@ -283,69 +247,36 @@ inside "app" do
     end
 
     inside "stylesheets" do
+      remove_file "refills/_flashes.scss"
+      remove_file "refills"
       remove_file "application.css"
-      copy_file   "application.css.scss"
+      copy_file   "application.scss"
       copy_file   "_variables.scss"
       copy_file   "_bootstrap_variables_overrides.scss"
-      create_file "_base.css.scss",   ""
-      create_file "_layout.css.scss", ""
-      create_file "_module.css.scss", ""
-      create_file "_state.css.scss",  ""
-      create_file "_theme.css.scss",  ""
-      copy_file   "email.css.scss"
-    end
-
-    inside "javascripts" do
-      inside "main" do
-        create_file "base.js.coffee", "@Main = {}"
-      end
-      create_file "main.js", "//= require ./main/base\n//= require_tree ./main\n"
-
-      inside "shared" do
-        create_file "base.js.coffee", "@Shared = {}"
-        create_file "form.js.coffee", "@Shared.form = {}"
-        create_file "util.js.coffee", "@Shared.util = {}"
-      end
-      create_file "shared.js", "//= require ./shared/base\n//= require_tree ./shared\n"
-
-      insert_into_file 'application.js', after: "//= require turbolinks\n" do
-        text = "//= require bootstrap-sprockets\n"
-        text
-      end
+      create_file "_base.scss",   ""
+      create_file "_layout.scss", ""
+      create_file "_module.scss", ""
+      create_file "_state.scss",  ""
+      create_file "_theme.scss",  ""
+      copy_file   "email.scss"
     end
   end
 
   inside "views" do
-    inside "layouts" do
-      remove_file "application.html.erb"
-      copy_file "application.html.haml"
-      copy_file "email.html.haml"
+    inside 'application' do
+      run "for file in *.erb; do html2haml -e $file ${file%erb}haml > /dev/null 2>&1 && rm $file; done"
     end
 
-    inside "shared" do
-      template "_head.html.haml"
+    inside "layouts" do
+      run "html2haml -e application.html.erb application.html.haml > /dev/null 2>&1 && rm application.html.erb"
+      copy_file "email.html.haml"
     end
   end
 end
 
 inside "config" do
-  remove_file "database.yml"
-  template "database.yml.example"
-  run "cp database.yml.example database.yml"
-
-  insert_into_file 'application.rb', after: "# config.i18n.default_locale = :de\n" do
+  insert_into_file 'application.rb', after: "config.active_job.queue_adapter = :delayed_job\n" do
     <<-APP
-    config.generators do |g|
-      g.test_framework :rspec,
-       fixtures: true,
-       view_specs: false,
-       helper_specs: false,
-       routing_specs:    false,
-       controller_specs: true,
-       request_specs:    true
-
-      g.fixture_replacement :factory_girl, dir: "spec/factories"
-    end
 
     config.assets.precompile += %w( .svg .eot .woff .ttf email.css )
     config.assets.paths << Rails.root.join('app', 'assets', 'fonts')
@@ -353,30 +284,28 @@ inside "config" do
   end
 
   inside "environments" do
-    insert_into_file 'development.rb', after: "config.action_mailer.raise_delivery_errors = false\n" do
+    insert_into_file 'development.rb', after: "config.action_mailer.default_url_options = { host: \"localhost:3000\" }\n" do
       <<-DEV
-      # Action Mailer default options
-      config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 
-      # Setup for Mailcatcher, if present
-      if `which mailcatcher`.length > 0
-        config.action_mailer.delivery_method = :smtp
-        config.action_mailer.smtp_settings = { address: "localhost", port: 1025 }
+  # Setup for Mailcatcher, if present
+  if `which mailcatcher`.length > 0
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = { address: "localhost", port: 1025 }
+  end
+
+  # Specify locations for mails previews
+  config.action_mailer.preview_path = "spec/mailers/previews"
+
+  # Use email template for emails except on devise mails sent for admin users
+  config.to_prepare do
+    ActionMailer::Base.layout proc { |mailer|
+      if mailer.is_a?(Devise::Mailer) && mailer.scope_name == :admin_user
+        nil
+      else
+        "email"
       end
-
-      # Specify locations for mails previews
-      config.action_mailer.preview_path = "spec/mailers/previews"
-
-      # Use email template for emails except on devise mails sent for admin users
-      config.to_prepare do
-        ActionMailer::Base.layout proc { |mailer|
-          if mailer.is_a?(Devise::Mailer) && mailer.scope_name == :admin_user
-            nil
-          else
-            "email"
-          end
-        }
-      end
+    }
+  end
 
       DEV
     end
@@ -402,14 +331,16 @@ generate "simple_form:install --bootstrap"
 generate "active_admin:install" if install_active_admin
 run "bundle exec guard init livereload"
 run "bundle exec guard init rspec" if install_guard_rspec
-generate "rspec:install"
 
 #################
 # Devise config #
 #################
 
 if install_devise
-  devise_secret = IO.readlines("config/initializers/devise.rb")[6].split(" = ")[1].gsub("'","")
+  devise_secret = IO.readlines("config/initializers/devise.rb")[8].split(" = ")[1].gsub("'","")
+  insert_into_file '.env',
+                   "DEVISE_SECRET=#{devise_secret}",
+                   after: "WEB_CONCURRENCY=1\n"
   insert_into_file 'config/secrets.yml',
                   "  devise_secret: #{devise_secret}",
                   after: "development:\n"
@@ -444,9 +375,7 @@ end
     end
   end
 
-  comment_lines "rails_helper.rb", /config.fixture_path/
-
-  insert_into_file "rails_helper.rb", after: "# Add additional requires below this line. Rails is not loaded until this point!\n" do
+  insert_into_file "rails_helper.rb", after: "require \"rspec/rails\"\n" do
     text =  "require 'capybara/rails'\n"
     text << "require 'capybara/rspec'\n"
     text << "require 'capybara/email/rspec'\n"
@@ -454,7 +383,6 @@ end
     text << "require 'email_spec'\n"
     text << "require 'shoulda/matchers'\n"
     text << "require 'paperclip/matchers'\n" if install_paperclip
-    text << "require 'webmock/rspec'\n"
     text << "require 'vcr'\n" if install_vcr
     text
   end
@@ -469,6 +397,7 @@ Faker::Config.locale = :"en-gb"
 
   insert_into_file "rails_helper.rb", after: "ActiveRecord::Migration.maintain_test_schema!\n" do
     <<-RSPEC
+
 VCR.configure do |c|
   c.cassette_library_dir = 'spec/fixtures/vcr_cassettes'
   c.hook_into :webmock # or :fakeweb
@@ -478,6 +407,7 @@ end
 
   insert_into_file "rails_helper.rb", after: "RSpec.configure do |config|\n" do
     <<-RSPEC
+
   config.include FactoryGirl::Syntax::Methods
 
   config.before(:suite) do
@@ -491,21 +421,23 @@ end
     end
   end
 
-  config.include Formulaic::Dsl, type: :feature
   config.include EmailSpec::Helpers
   config.include EmailSpec::Matchers
 
     RSPEC
   end
 
-  insert_into_file "rails_helper.rb", after: "Rspec.configure do |config|\n" do
+  insert_into_file "rails_helper.rb", after: "  config.include FactoryGirl::Syntax::Methods\n" do
     <<-RSPEC
+
   config.include Devise::TestHelpers, type: :controller
     RSPEC
   end if install_devise
 
-  insert_into_file "rails_helper.rb", after: "Rspec.configure do |config|\n" do
-    "config.include Paperclip::Shoulda::Matchers"
+  insert_into_file "rails_helper.rb", after: "config.include FactoryGirl::Syntax::Methods\n" do
+    <<-RSPEC
+  config.include Paperclip::Shoulda::Matchers
+    RSPEC
   end if install_paperclip
 
   inside "mailers" do
@@ -542,26 +474,15 @@ def run_bundle ; end
 
 say("\nPlease note that you're using ruby #{CURRENT_RUBY}. Latest ruby version is #{LATEST_STABLE_RUBY}. Should you want to change it, please amend the Gemfile accordingly.\n", "\e[33m") if outdated_ruby_version?
 
-say("\nWe have installed Heroku's rails_12factor gem for you. You'll still need to configure your Heroku account and create your app.\n", "\e[33m") if heroku_deploy
-
 say("\nWe have installed Active Admin. When you run your migrations, you'll have an AdminUser with:\n\tEmail: admin@example.com\n\tPassword: password\n\n", "\e[33m") if install_active_admin
 
-create_database = ask_with_default_no("Do you want me to create and migrate the database for you? [y/N]")
+create_database = ask_with_default_no("Do you want me to migrate the database for you? [y/N]")
 
 if create_database
-  run "bundle exec rake db:create"
   run "bundle exec rake db:migrate"
-
-  if install_airbrake
-    airbrake_api_key = ask("\nEnter your airbrake API KEY to configure Airbrake: ")
-    generate "airbrake --api-key #{airbrake_api_key}"
-  end
 
   run "bundle exec rake spec"
   say("\nWhat you see above is the first failing test of the project. It fails because you have no routes defined, so the root_path is not visitable. This means everything is set and you can start working (perhaps in making this test pass).\n\n", "\e[33m")
-
-else
-  say("\nAirbrake gem has been installed, you'll need to create your databases and then run 'rails generate airbrake --api-key your_key_here' to set it up.\n\n", "\e[33m") if install_airbrake
 
 end
 
