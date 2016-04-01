@@ -20,7 +20,7 @@ git clone git@github.com:cookieshq/hebillas.git
 And then run suspenders, passing the template:
 
 ```
-suspenders app_name -m cookieshq-rails-template/template.rb
+suspenders app_name -m hebillas/template.rb
 ```
 
 It will ask you if you want to install certain gems and install them for you, along with other goodies. In the end, it will ask you if you want your database to be migrated.
