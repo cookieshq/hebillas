@@ -121,17 +121,20 @@ end
 # Prompt the user for options        #
 #                                    #
 ######################################
-install_devise = ask_with_default_yes("Do you want to install Devise? [Y/n]")
+use_devise = ask_with_default_yes("Do you want to install Devise? [Y/n]")
 
-if install_devise
+if use_devise
   generate_devise_user  = ask_with_default_yes("Do you want to create a Devise User Class? [Y/n]")
   generate_devise_views = ask_with_default_yes("Do you want to generate Devise views? [Y/n]")
-  install_active_admin  = ask_with_default_yes("Do you want to install Active Admin? [Y/n]")
+  use_active_admin  = ask_with_default_yes("Do you want to install Active Admin? [Y/n]")
 end
 
-install_paperclip      = ask_with_default_yes("Do you want to install Paperclip? [Y/n]")
-install_vcr            = ask_with_default_yes("Do you want to install VCR? [Y/n]")
-install_guard_rspec    = ask_with_default_yes("Do you want to install Guard-Rspec? [Y/n]")
+use_roadie         = ask_with_default_yes("Do you want to install Roadie? [Y/n]")
+use_paperclip      = ask_with_default_yes("Do you want to install Paperclip? [Y/n]")
+use_vcr            = ask_with_default_yes("Do you want to install VCR? [Y/n]")
+use_guard_rspec    = ask_with_default_yes("Do you want to install Guard-Rspec? [Y/n]")
+switch_to_haml      = ask_with_default_yes("Do you want to use HAML instead of ERB? [Y/n]")
+switch_to_bootstrap = ask_with_default_yes("Do you want to remove Bourbon/Neat and use Bootstrap? [Y/n]")
 # switch_to_coffeescript = ask_with_default_yes("Do you want to remove EC6 and install CoffeeScript? [Y/n]")
 
 ######################################
@@ -147,28 +150,30 @@ install_guard_rspec    = ask_with_default_yes("Do you want to install Guard-Rspe
 #   gem "coffee-rails", "~> 4.1.0"
 # end
 
-gem 'devise' if install_devise
-gem 'haml-rails'
+gem 'devise'     if use_devise
+gem 'haml-rails' if switch_to_haml
 
 # Remove bourbon/neat/refills
-gsub_file('Gemfile', /^gem "bourbon, "5.0.0.beta.3"$/, '')
-gsub_file('Gemfile', /^gem "neat", "~> 1.7.0"$/, '')
-gsub_file('Gemfile', /^gem "refills"/, '')
-gem 'bootstrap-sass'
+if switch_to_bootstrap
+  gsub_file('Gemfile', /^gem "bourbon, "5.0.0.beta.3"$/, '')
+  gsub_file('Gemfile', /^gem "neat", "~> 1.7.0"$/, '')
+  gsub_file('Gemfile', /^gem "refills"/, '')
+  gem 'bootstrap-sass'
+end
 
-gem 'activeadmin', github: 'gregbell/active_admin' if install_active_admin
-gem 'paperclip' if install_paperclip
-gem "roadie", '~> 2.4.3'
+gem 'activeadmin', github: 'gregbell/active_admin' if use_active_admin
+gem 'paperclip' if use_paperclip
+gem 'roadie', '~> 2.4.3' if use_roadie
 
 gem_group :development do
   gem 'mailcatcher', require: false
-  gem 'html2haml', require: false if generate_devise_views
+  gem 'html2haml', require: false if switch_to_haml
   gem 'guard-livereload', require: false
   gem 'brakeman', require: false
 end
 
 gem_group :development, :test do
-  gem 'guard-rspec', require: false if install_guard_rspec
+  gem 'guard-rspec', require: false if use_guard_rspec
   gem 'faker'
 end
 
@@ -176,7 +181,7 @@ gem_group :test do
   gem 'capybara'
   gem 'capybara-email'
   gem 'email_spec'
-  gem 'vcr' if install_vcr
+  gem 'vcr' if use_vcr
 end
 
 ######################################
@@ -229,7 +234,7 @@ insert_into_file ".gitignore", after: "/config/secrets.yml\n" do
 # Ignore Paperclip uploads
 /public/system
   GITIGNORE
-end if install_paperclip
+end if use_paperclip
 
 
 insert_into_file ".gitignore", after: "/config/secrets.yml\n" do
@@ -259,17 +264,21 @@ inside "app" do
       create_file "_state.scss",  ""
       create_file "_theme.scss",  ""
       copy_file   "email.scss"
-    end
+    end if switch_to_bootstrap
   end
 
   inside "views" do
     inside 'application' do
-      run "for file in *.erb; do html2haml -e $file ${file%erb}haml > /dev/null 2>&1 && rm $file; done"
+      run "for file in *.erb; do html2haml -e $file ${file%erb}haml > /dev/null 2>&1 && rm $file; done" if switch_to_haml
     end
 
     inside "layouts" do
-      run "html2haml -e application.html.erb application.html.haml > /dev/null 2>&1 && rm application.html.erb"
-      copy_file "email.html.haml"
+      if switch_to_haml
+        run "html2haml -e application.html.erb application.html.haml > /dev/null 2>&1 && rm application.html.erb"
+        copy_file "email.html.haml" if use_roadie
+      else
+        copy_file "email.html.erb" if use_roadie
+      end
     end
   end
 end
@@ -317,7 +326,7 @@ end
 # Running installed gems generators  #
 #                                    #
 ######################################
-if install_devise
+if use_devise
   generate "devise:install"
   generate "devise user"  if generate_devise_user
 
@@ -328,15 +337,15 @@ if install_devise
 end
 
 generate "simple_form:install --bootstrap"
-generate "active_admin:install" if install_active_admin
+generate "active_admin:install" if use_active_admin
 run "bundle exec guard init livereload"
-run "bundle exec guard init rspec" if install_guard_rspec
+run "bundle exec guard init rspec" if use_guard_rspec
 
 #################
 # Devise config #
 #################
 
-if install_devise
+if use_devise
   devise_secret = IO.readlines("config/initializers/devise.rb")[8].split(" = ")[1].gsub("'","")
   insert_into_file '.env',
                    "DEVISE_SECRET=#{devise_secret}",
@@ -382,8 +391,8 @@ end
     text << "require 'database_cleaner'\n"
     text << "require 'email_spec'\n"
     text << "require 'shoulda/matchers'\n"
-    text << "require 'paperclip/matchers'\n" if install_paperclip
-    text << "require 'vcr'\n" if install_vcr
+    text << "require 'paperclip/matchers'\n" if use_paperclip
+    text << "require 'vcr'\n" if use_vcr
     text
   end
 
@@ -403,7 +412,7 @@ VCR.configure do |c|
   c.hook_into :webmock # or :fakeweb
 end
     RSPEC
-  end if install_vcr
+  end if use_vcr
 
   insert_into_file "rails_helper.rb", after: "RSpec.configure do |config|\n" do
     <<-RSPEC
@@ -432,13 +441,13 @@ end
 
   config.include Devise::TestHelpers, type: :controller
     RSPEC
-  end if install_devise
+  end if use_devise
 
   insert_into_file "rails_helper.rb", after: "config.include FactoryGirl::Syntax::Methods\n" do
     <<-RSPEC
   config.include Paperclip::Shoulda::Matchers
     RSPEC
-  end if install_paperclip
+  end if use_paperclip
 
   inside "mailers" do
     inside "previews" do
@@ -474,7 +483,7 @@ def run_bundle ; end
 
 say("\nPlease note that you're using ruby #{CURRENT_RUBY}. Latest ruby version is #{LATEST_STABLE_RUBY}. Should you want to change it, please amend the Gemfile accordingly.\n", "\e[33m") if outdated_ruby_version?
 
-say("\nWe have installed Active Admin. When you run your migrations, you'll have an AdminUser with:\n\tEmail: admin@example.com\n\tPassword: password\n\n", "\e[33m") if install_active_admin
+say("\nWe have installed Active Admin. When you run your migrations, you'll have an AdminUser with:\n\tEmail: admin@example.com\n\tPassword: password\n\n", "\e[33m") if use_active_admin
 
 create_database = ask_with_default_no("Do you want me to migrate the database for you? [y/N]")
 
