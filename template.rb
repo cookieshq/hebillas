@@ -257,6 +257,7 @@ inside "app" do
       remove_file "refills/_flashes.scss"
       remove_file "refills"
       remove_file "application.css"
+      remove_file "application.scss"
       copy_file   "application.scss"
       copy_file   "_variables.scss"
       copy_file   "_bootstrap_variables_overrides.scss"
@@ -338,7 +339,7 @@ if use_devise
   end
 end
 
-generate "simple_form:install --bootstrap"
+generate "simple_form:install --bootstrap" if switch_to_bootstrap
 generate "active_admin:install" if use_active_admin
 run "bundle exec guard init livereload"
 run "bundle exec guard init rspec" if use_guard_rspec

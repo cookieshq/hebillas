@@ -86,3 +86,4 @@ Future improvements
 * Create a version that can be run from the raw link on github (i.e.: embedding all files on the template).
 * Separate long strings into auxiliary methods, for the sake of code readability.
 * Initiate the git repo for you
+* Make it use the heroku.local command and not rails s or foreman start.
