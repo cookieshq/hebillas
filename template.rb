@@ -99,7 +99,7 @@ root: #{current_dir}
 
 windows:
   - editor: vim
-  - server: bundle exec rails s
+  - server: heroku local
   - console: bundle exec rails c
   - terminal:
     TMUX
@@ -165,7 +165,7 @@ if switch_to_bootstrap
   gem 'bootstrap-sass'
 end
 
-gem 'activeadmin', github: 'gregbell/active_admin' if use_active_admin
+gem 'activeadmin', '~> 1.0.0.pre2' if use_active_admin
 gem 'paperclip' if use_paperclip
 gem 'roadie', '~> 2.4.3' if use_roadie
 
@@ -504,16 +504,21 @@ def run_bundle ; end
 
 say("\nPlease note that you're using ruby #{CURRENT_RUBY}. Latest ruby version is #{LATEST_STABLE_RUBY}. Should you want to change it, please amend the Gemfile accordingly.\n", "\e[33m") if outdated_ruby_version?
 
-say("\nWe have installed Active Admin. When you run your migrations, you'll have an AdminUser with:\n\tEmail: admin@example.com\n\tPassword: password\n\n", "\e[33m") if use_active_admin
+migrate_database = ask_with_default_no("Do you want me to migrate the database for you? [y/N]")
+run "bundle exec rake db:migrate" if migrate_database
 
-create_database = ask_with_default_no("Do you want me to migrate the database for you? [y/N]")
+if use_active_admin
+  seed_db = ask_with_default_no("\nWe have installed Active Admin. To have a default AdminUser created, we need to seed the database. Do you want us to do it for you? [y/N]")
 
-if create_database
-  run "bundle exec rake db:migrate"
+  if seed_db && migrate_database
+    run "bundle exec rake db:seed"
+    say("\nWe have created a default AdminUsers with credentials:\n\tEmail: admin@example.com\n\tPassword: password\n\n", "\e[33m")
+  end
+end
 
+if migrate_database
   run "bundle exec rake spec"
   say("\nWhat you see above is the first failing test of the project. It fails because you have no routes defined, so the root_path is not visitable. This means everything is set and you can start working (perhaps in making this test pass).\n\n", "\e[33m")
-
 end
 
 if create_tmuxinator_file
