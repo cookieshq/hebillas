@@ -1,12 +1,20 @@
-HEBILLAS: The Cookies HQ Rails App Template Redux
-=================================================
+HEBILLAS: The suspenders companion
+===================================
 
-On our projects we tend to use the same gems and configurations, this template is created to help us set up new projects faster.
+[thoughtbot's Suspenders](https://github.com/thoughtbot/suspenders) makes a fantastic base for any new Rails project, but it's also very opinionated.
+
+Using it, we found ourselves changing elements to suits more our stack.
+
+Thankfully, under the hood, using `suspenders` is the same as using `rails new`, so it allows us to apply a rails template on top of it, and tweak it to our need.
+
+We found this approach more suitable than maintaining a fork, or asking the lovely guys at thoughbot to comply with our need.
+
+If you're thinking about extending Hebillas, just make sure not to make your change as mandatory, and always ask users if they want the change to be applied.
 
 Requirements
 ------------
 
-This template is based to work on top of [Thoughtbot's Suspenders](https://github.com/thoughtbot/suspenders) (v1.37).
+This template is based to work on top of [thoughtbot's Suspenders](https://github.com/thoughtbot/suspenders) (v1.37).
 
 How to use
 ----------
@@ -85,5 +93,3 @@ Future improvements
 * Check Heroku option on suspenders and get in additional options if needed/available.
 * Create a version that can be run from the raw link on github (i.e.: embedding all files on the template).
 * Separate long strings into auxiliary methods, for the sake of code readability.
-* Initiate the git repo for you
-* Make it use the heroku.local command and not rails s or foreman start.
