@@ -274,6 +274,9 @@ inside "app" do
         insert_into_file 'application.js', "//= require bootstrap-sprockets\n", after: "//= require jquery_ujs\n"
       end
     end
+
+  inside 'services' do
+    create_file '.keep', ''
   end
 
   inside "views" do
@@ -464,6 +467,10 @@ end
     inside "previews" do
       create_file ".keep", ""
     end
+  end
+
+  inside "services" do
+    create_file ".keep", ""
   end
 end
 
