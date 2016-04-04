@@ -58,6 +58,7 @@ windows:
   - editor: vim
   - server: heroku local
   - console: bundle exec rails c
+  - guard: bundle exec guard
   - terminal:
     TMUX
   end
