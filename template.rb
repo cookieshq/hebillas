@@ -253,21 +253,27 @@ inside "app" do
       create_file ".keep", ""
     end
 
-    inside "stylesheets" do
-      remove_file "refills/_flashes.scss"
-      remove_file "refills"
-      remove_file "application.css"
-      remove_file "application.scss"
-      copy_file   "application.scss"
-      copy_file   "_variables.scss"
-      copy_file   "_bootstrap_variables_overrides.scss"
-      create_file "_base.scss",   ""
-      create_file "_layout.scss", ""
-      create_file "_module.scss", ""
-      create_file "_state.scss",  ""
-      create_file "_theme.scss",  ""
-      copy_file   "email.scss"
-    end if switch_to_bootstrap
+    if switch_to_bootstrap
+      inside "stylesheets" do
+        remove_file "refills/_flashes.scss"
+        remove_file "refills"
+        remove_file "application.css"
+        remove_file "application.scss"
+        copy_file   "application.scss"
+        copy_file   "_variables.scss"
+        copy_file   "_bootstrap_variables_overrides.scss"
+        create_file "_base.scss",   ""
+        create_file "_layout.scss", ""
+        create_file "_module.scss", ""
+        create_file "_state.scss",  ""
+        create_file "_theme.scss",  ""
+        copy_file   "email.scss"
+      end
+
+      inside "javascripts" do
+        insert_into_file 'application.js', "//= require bootstrap-sprockets\n", after: "//= require jquery_ujs\n"
+      end
+    end
   end
 
   inside "views" do
