@@ -168,6 +168,16 @@ insert_into_file ".gitignore", after: "/tmp/*\n" do
 GITIGNORE
 end
 
+##############
+# Tmuxinator #
+##############
+if create_tmuxinator_file
+  add_tmuxinator_file
+  run "mkdir -p ~/.tmuxinator/"
+  run "ln .#{app_name}.tmx.yml ~/.tmuxinator/#{app_name}.yml"
+  gitignore_tmuxinator
+end
+
 inside "app" do
   inside "assets" do
     inside "fonts" do
@@ -440,9 +450,5 @@ if migrate_database
   say("\nWhat you see above is the first failing test of the project. It fails because you have no routes defined, so the root_path is not visitable. This means everything is set and you can start working (perhaps in making this test pass).\n\n", "\e[33m")
 end
 
-if create_tmuxinator_file
-  add_tmuxinator_file
-  run "mkdir -p ~/.tmuxinator/"
-  run "ln .#{app_name}.tmx.yml ~/.tmuxinator/#{app_name}.yml"
-  gitignore_tmuxinator
-end
+say("Restarting Spring\n", "\e[33m")
+run "bundle exec spring binstub --all"
