@@ -79,7 +79,8 @@ end
 #                                    #
 ######################################
 puts "\n================================== HEBILLAS ===================================\n"
-
+say("Stopping spring to avoid problems during installation", "\e[33m")
+run "bundle exec spring stop"
 use_devise = ask_with_default_yes("Do you want to install Devise? [Y/n]")
 
 if use_devise
