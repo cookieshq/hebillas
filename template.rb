@@ -121,6 +121,8 @@ end
 # Prompt the user for options        #
 #                                    #
 ######################################
+puts "\n#------------------------ HEBILLAS -----------------------------#\n"
+
 use_devise = ask_with_default_yes("Do you want to install Devise? [Y/n]")
 
 if use_devise
@@ -274,6 +276,7 @@ inside "app" do
         insert_into_file 'application.js', "//= require bootstrap-sprockets\n", after: "//= require jquery_ujs\n"
       end
     end
+  end
 
   inside 'services' do
     create_file '.keep', ''
