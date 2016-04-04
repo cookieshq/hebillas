@@ -341,7 +341,7 @@ if use_devise
 
   if generate_devise_views
     generate "devise:views"
-    run "for file in app/views/devise/**/*.erb; do html2haml -e $file ${file%erb}haml > /dev/null 2>&1 && rm $file; done"
+    run "for file in app/views/devise/**/*.erb; do html2haml -e $file ${file%erb}haml > /dev/null 2>&1 && rm $file; done" if switch_to_haml
   end
 end
 
