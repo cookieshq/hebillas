@@ -330,6 +330,15 @@ inside "config" do
   end
 end
 
+#####################
+# SECRET KEY CONFIG #
+#####################
+
+secret_key = SecureRandom.hex(64)
+insert_into_file '.env',
+                 "SECRET_KEY_BASE=#{secret_key}",
+                 after: "WEB_CONCURRENCY=1\n"
+
 ######################################
 #                                    #
 # Running installed gems generators  #
@@ -360,19 +369,12 @@ if use_devise
                    "DEVISE_SECRET=#{devise_secret}",
                    after: "WEB_CONCURRENCY=1\n"
   insert_into_file 'config/secrets.yml',
-                  "  devise_secret: #{devise_secret}",
-                  after: "development:\n"
-  insert_into_file 'config/secrets.yml',
-                  "  devise_secret: #{SecureRandom.hex(64)}\n",
-                  after: "test:\n"
-  insert_into_file 'config/secrets.yml',
                   "  devise_secret: <%= ENV[\"DEVISE_SECRET\"] %>\n",
-                  after: "production:\n"
+                  after: "secret_key_base: <%= ENV[\"SECRET_KEY_BASE\"] %>\n"
   insert_into_file 'config/initializers/devise.rb',
                    "  config.secret_key = Rails.application.secrets.devise_secret\n",
-                   after: "# confirmation, reset password and unlock tokens in the database.\n"
+                   before: "# ==> Mailer Configuration\n"
 end
-
 
 ################
 # Rspec Config #
