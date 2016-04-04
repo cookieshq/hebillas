@@ -137,8 +137,7 @@ use_vcr            = ask_with_default_yes("Do you want to install VCR? [Y/n]")
 use_guard_rspec    = ask_with_default_yes("Do you want to install Guard-Rspec? [Y/n]")
 switch_to_haml      = ask_with_default_yes("Do you want to use HAML instead of ERB? [Y/n]")
 switch_to_bootstrap = ask_with_default_yes("Do you want to remove Bourbon/Neat and use Bootstrap? [Y/n]")
-switch_to_coffeescript = ask_with_default_yes("Do you want to remove EC6 and install CoffeeScript? [Y/n]")
-
+#switch_to_coffeescript = ask_with_default_yes("Do you want to remove EC6 and install CoffeeScript? [Y/n]")
 create_tmuxinator_file = ask_with_default_no("Do you want to create a tmuxinator file? [y/N]")
 
 ######################################
@@ -148,11 +147,11 @@ create_tmuxinator_file = ask_with_default_no("Do you want to create a tmuxinator
 ######################################
 
 # Remove EC6 and put back CoffeeScript
-if switch_to_coffeescript
-  gsub_file('Gemfile', /^gem "sprockets"$/, '')
-  gsub_file('Gemfile', /^gem "sprockets-es6"$/, '')
-  gem "coffee-rails", "~> 4.1.0"
-end
+# if switch_to_coffeescript
+#   gsub_file('Gemfile', /^gem "sprockets"$/, '')
+#   gsub_file('Gemfile', /^gem "sprockets-es6"$/, '')
+#   gem "coffee-rails", "~> 4.1.0"
+# end
 
 gem 'devise'     if use_devise
 gem 'haml-rails' if switch_to_haml
