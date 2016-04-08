@@ -333,17 +333,16 @@ inside "spec" do
         Faker::Config.locale = :"en-gb"
     RSPEC
   end
-end
 
+  inside "mailers" do
+    inside "previews" do
+      create_file ".keep", ""
+    end
+  end
 
-inside "mailers" do
-  inside "previews" do
+  inside "services" do
     create_file ".keep", ""
   end
-end
-
-inside "services" do
-  create_file ".keep", ""
 end
 
 ######################################
