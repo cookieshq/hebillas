@@ -96,7 +96,7 @@ use_vcr            = ask_with_default_yes("Do you want to install VCR? [Y/n]")
 use_guard_rspec    = ask_with_default_yes("Do you want to install Guard-Rspec? [Y/n]")
 switch_to_haml      = ask_with_default_yes("Do you want to use HAML instead of ERB? [Y/n]")
 switch_to_bootstrap = ask_with_default_yes("Do you want to remove Bourbon/Neat and use Bootstrap? [Y/n]")
-#switch_to_coffeescript = ask_with_default_yes("Do you want to remove EC6 and install CoffeeScript? [Y/n]")
+switch_to_coffeescript = ask_with_default_yes("Do you want to remove EC6 and install CoffeeScript? [Y/n]")
 create_tmuxinator_file = ask_with_default_no("Do you want to create a tmuxinator file? [y/N]")
 
 ######################################
@@ -105,19 +105,18 @@ create_tmuxinator_file = ask_with_default_no("Do you want to create a tmuxinator
 #                                    #
 ######################################
 
-# Remove EC6 and put back CoffeeScript
-# if switch_to_coffeescript
-#   gsub_file('Gemfile', /^gem "sprockets"$/, '')
-#   gsub_file('Gemfile', /^gem "sprockets-es6"$/, '')
-#   gem "coffee-rails", "~> 4.1.0"
-# end
+if switch_to_coffeescript
+ gsub_file('Gemfile', /^gem "sprockets"$/, '')
+ gsub_file('Gemfile', /^gem "sprockets-es6"$/, '')
+ gem "coffee-rails", "~> 4.1.0"
+end
 
 gem 'devise'     if use_devise
 gem 'haml-rails' if switch_to_haml
 
 # Remove bourbon/neat/refills
 if switch_to_bootstrap
-  gsub_file('Gemfile', /^gem "bourbon, "5.0.0.beta.3"$/, '')
+  gsub_file('Gemfile', /^gem "bourbon", "5.0.0.beta.3"$/, '')
   gsub_file('Gemfile', /^gem "neat", "~> 1.7.0"$/, '')
   gsub_file('Gemfile', /^gem "refills"/, '')
   gem 'bootstrap-sass'
@@ -295,42 +294,26 @@ generate "active_admin:install" if use_active_admin
 run "bundle exec guard init livereload"
 run "bundle exec guard init rspec" if use_guard_rspec
 
-#################
-# Devise config #
-#################
-
-if use_devise
-  devise_secret = IO.readlines("config/initializers/devise.rb")[8].split(" = ")[1].gsub("'","")
-  insert_into_file '.env',
-                   "DEVISE_SECRET=#{devise_secret}",
-                   after: "WEB_CONCURRENCY=1\n"
-  insert_into_file 'config/secrets.yml',
-                  "  devise_secret: <%= ENV[\"DEVISE_SECRET\"] %>\n",
-                  after: "secret_key_base: <%= ENV[\"SECRET_KEY_BASE\"] %>\n"
-  insert_into_file 'config/initializers/devise.rb',
-                   "  config.secret_key = Rails.application.secrets.devise_secret\n",
-                   before: "# ==> Mailer Configuration\n"
-end
-
 ################
 # Rspec Config #
 ################
+
 inside "spec" do
   inside "acceptance" do
-    create_file "routes_acceptance_spec.rb" do
-      <<-TEST
-require 'rails_helper'
+    copy_file "routes_acceptance_spec.rb"
+  end
 
-feature "routes acceptance spec" do
-  scenario "user visits root path" do
-    visit root_path
-    expect(page.status_code).to eql(200)
+  inside "support" do
+    copy_file "devise.rb" if use_devise
+    copy_file "controller_macros.rb" if use_devise
+    copy_file "vcr.rb" if use_vcr
+    copy_file "email_spec.rb"
+    copy_file "paperclip.rb" if use_paperclip
+    copy_file "factory_girl.rb"
   end
 end
-      TEST
-    end
-  end
 
+inside "spec" do
   insert_into_file "rails_helper.rb", after: "require \"rspec/rails\"\n" do
     text =  "require 'capybara/rails'\n"
     text << "require 'capybara/rspec'\n"
@@ -340,71 +323,27 @@ end
     text << "require 'shoulda/matchers'\n"
     text << "require 'paperclip/matchers'\n" if use_paperclip
     text << "require 'vcr'\n" if use_vcr
+    text << "require 'devise'\n" if use_vcr
     text
   end
 
   insert_into_file "rails_helper.rb", after: "ActiveRecord::Migration.maintain_test_schema!\n" do
     <<-RSPEC
-
-Capybara.javascript_driver = :webkit
-Faker::Config.locale = :"en-gb"
+        Capybara.javascript_driver = :webkit
+        Faker::Config.locale = :"en-gb"
     RSPEC
   end
-
-  insert_into_file "rails_helper.rb", after: "ActiveRecord::Migration.maintain_test_schema!\n" do
-    <<-RSPEC
-
-VCR.configure do |c|
-  c.cassette_library_dir = 'spec/fixtures/vcr_cassettes'
-  c.hook_into :webmock # or :fakeweb
 end
-    RSPEC
-  end if use_vcr
 
-  insert_into_file "rails_helper.rb", after: "RSpec.configure do |config|\n" do
-    <<-RSPEC
 
-  config.include FactoryGirl::Syntax::Methods
-
-  config.before(:suite) do
-    DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with(:truncation)
-  end
-
-  config.around(:each) do |example|
-    DatabaseCleaner.cleaning do
-      example.run
-    end
-  end
-
-  config.include EmailSpec::Helpers
-  config.include EmailSpec::Matchers
-
-    RSPEC
-  end
-
-  insert_into_file "rails_helper.rb", after: "  config.include FactoryGirl::Syntax::Methods\n" do
-    <<-RSPEC
-
-  config.include Devise::TestHelpers, type: :controller
-    RSPEC
-  end if use_devise
-
-  insert_into_file "rails_helper.rb", after: "config.include FactoryGirl::Syntax::Methods\n" do
-    <<-RSPEC
-  config.include Paperclip::Shoulda::Matchers
-    RSPEC
-  end if use_paperclip
-
-  inside "mailers" do
-    inside "previews" do
-      create_file ".keep", ""
-    end
-  end
-
-  inside "services" do
+inside "mailers" do
+  inside "previews" do
     create_file ".keep", ""
   end
+end
+
+inside "services" do
+  create_file ".keep", ""
 end
 
 ######################################
