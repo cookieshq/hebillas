@@ -111,7 +111,14 @@ if switch_to_coffeescript
  gem "coffee-rails", "~> 4.1.0"
 end
 
-gem 'devise'     if use_devise
+if use_devise
+  if use_active_admin
+    gem 'devise', '~> 3.5', '>= 3.5.10'
+  else
+    gem 'devise'
+  end
+end
+
 gem 'haml-rails' if switch_to_haml
 
 # Remove bourbon/neat/refills
