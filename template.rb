@@ -108,7 +108,7 @@ create_tmuxinator_file = ask_with_default_no("Do you want to create a tmuxinator
 if switch_to_coffeescript
  gsub_file('Gemfile', /^gem "sprockets"$/, '')
  gsub_file('Gemfile', /^gem "sprockets-es6"$/, '')
- gem "coffee-rails", "~> 4.1.0"
+ gem "coffee-rails"
 end
 
 gem 'devise'     if use_devise
@@ -124,7 +124,7 @@ end
 
 gem 'activeadmin', '~> 1.0.0.pre2' if use_active_admin
 gem 'paperclip' if use_paperclip
-gem 'roadie', '~> 2.4.3' if use_roadie
+gem 'roadie' if use_roadie
 
 gem_group :development do
   gem 'mailcatcher', require: false
