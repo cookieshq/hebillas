@@ -9,25 +9,31 @@
 ######################################
 require 'securerandom'
 
-LATEST_STABLE_RUBY = '2.3.0'
-CURRENT_RUBY = RUBY_VERSION
+LATEST_STABLE_RUBY = '2.3.0'.freeze
+CURRENT_RUBY       = RUBY_VERSION
+
+QUESTION_PREFIX  = 'Do you want to '.freeze
+DEFAULT_YES      = '? [Y/n]'.freeze
+DEFAULT_NO       = '? [y/N]'.freeze
+POSITIVE_ANSWERS = %w(y Y yes Yes).freeze
+NEGATIVE_ANWSERS = %w(n N no No).freeze
 
 def source_paths
-  Array(super) + [File.join(File.expand_path(File.dirname(__FILE__)),'files')]
+  Array(super) + [File.join(File.expand_path(File.dirname(__FILE__)), 'files')]
 end
 
-def ask_with_default_yes(question)
-  answer = ask question
-  answer = ['n', 'N', 'no', 'No'].include?(answer) ? false : true
+def ask_and_expect_yes(question)
+  answer = ask(QUESTION_PREFIX + question + DEFAULT_YES)
+  NEGATIVE_ANWSERS.include?(answer) ? false : true
 end
 
-def ask_with_default_no(question)
-  answer = ask question
-  answer = ['y', 'Y', 'yes', 'Yes'].include?(answer) ? true : false
+def ask_and_expect_no(question)
+  answer = ask(QUESTION_PREFIX + question + DEFAULT_NO)
+  POSITIVE_ANSWERS.include?(answer) ? true : false
 end
 
 def outdated_ruby_version?
-  LATEST_STABLE_RUBY.gsub('.', '').to_i > CURRENT_RUBY.gsub('.', '').to_i
+  LATEST_STABLE_RUBY.delete('.').to_i > CURRENT_RUBY.delete('.').to_i
 end
 
 def add_tmuxinator_file
@@ -82,22 +88,23 @@ end
 puts "\n================================== HEBILLAS ===================================\n"
 say("Stopping spring to avoid problems during installation", "\e[33m")
 run "bundle exec spring stop"
-use_devise = ask_with_default_yes("Do you want to install Devise? [Y/n]")
+
+use_devise = ask_and_expect_yes("install Devise")
 
 if use_devise
-  generate_devise_user  = ask_with_default_yes("Do you want to create a Devise User Class? [Y/n]")
-  generate_devise_views = ask_with_default_yes("Do you want to generate Devise views? [Y/n]")
-  use_active_admin  = ask_with_default_yes("Do you want to install Active Admin? [Y/n]")
+  generate_devise_user  = ask_and_expect_yes('create a Devise User Class')
+  generate_devise_views = ask_and_expect_yes("generate Devise views")
+  use_active_admin      = ask_and_expect_yes("install Active Admin")
 end
 
-use_roadie         = ask_with_default_yes("Do you want to install Roadie? [Y/n]")
-use_paperclip      = ask_with_default_yes("Do you want to install Paperclip? [Y/n]")
-use_vcr            = ask_with_default_yes("Do you want to install VCR? [Y/n]")
-use_guard_rspec    = ask_with_default_yes("Do you want to install Guard-Rspec? [Y/n]")
-switch_to_haml      = ask_with_default_yes("Do you want to use HAML instead of ERB? [Y/n]")
-switch_to_bootstrap = ask_with_default_yes("Do you want to remove Bourbon/Neat and use Bootstrap? [Y/n]")
-switch_to_coffeescript = ask_with_default_yes("Do you want to remove EC6 and install CoffeeScript? [Y/n]")
-create_tmuxinator_file = ask_with_default_no("Do you want to create a tmuxinator file? [y/N]")
+use_roadie             = ask_and_expect_yes("install Roadie")
+use_paperclip          = ask_and_expect_yes("install Paperclip")
+use_vcr                = ask_and_expect_yes("install VCR")
+use_guard_rspec        = ask_and_expect_yes("install Guard-Rspec")
+switch_to_haml         = ask_and_expect_yes("use HAML instead of ERB")
+switch_to_bootstrap    = ask_and_expect_yes("remove Bourbon/Neat and use Bootstrap")
+switch_to_coffeescript = ask_and_expect_yes("remove EC6 and install CoffeeScript")
+create_tmuxinator_file = ask_and_expect_no("create a tmuxinator file")
 
 ######################################
 #                                    #
@@ -379,11 +386,12 @@ def run_bundle ; end
 
 say("\nPlease note that you're using ruby #{CURRENT_RUBY}. Latest ruby version is #{LATEST_STABLE_RUBY}. Should you want to change it, please amend the Gemfile accordingly.\n", "\e[33m") if outdated_ruby_version?
 
-migrate_database = ask_with_default_no("Do you want me to migrate the database for you? [y/N]")
+migrate_database = ask_and_expect_no("migrate the database now")
 run "bundle exec rake db:migrate" if migrate_database
 
 if use_active_admin
-  seed_db = ask_with_default_no("\nWe have installed Active Admin. To have a default AdminUser created, we need to seed the database. Do you want us to do it for you? [y/N]")
+  say("\nWe have installed Active Admin. To have a default AdminUser created, we need to seed the database.")
+  seed_db = ask_and_expect_no('seed the database now')
 
   if seed_db && migrate_database
     run "bundle exec rake db:seed"
