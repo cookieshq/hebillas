@@ -82,6 +82,7 @@ end
 
 def bootstrap_js_imports
   <<-BSJSIMPORTS
+
 // Check which bootstrap modules to add here
 // https://github.com/twbs/bootstrap-sass/tree/master/assets/javascripts/bootstrap
 
@@ -234,8 +235,8 @@ inside "app" do
       create_file ".keep", ""
     end
 
-    if switch_to_bootstrap
-      inside "stylesheets" do
+    inside "stylesheets" do
+      if switch_to_bootstrap
         remove_file "refills/_flashes.scss"
         remove_file "refills"
         remove_file "application.css"
@@ -250,16 +251,13 @@ inside "app" do
         create_file "_state.scss",  ""
         create_file "_theme.scss",  ""
         copy_file   "email.scss"
+        insert_into_file 'application.scss', "\n@import \'font-awesome\';\n", after: "@import \'theme\';\n" if use_font_awesome
+      else
+        insert_into_file 'application.css', "*= require font-awesome\n", after: "*= require_self\n" if use_font_awesome
       end
+    end
 
-      if use_font_awesome
-        if switch_to_bootstrap
-          insert_into_file 'application.scss', "@import 'font-awesome';\n"
-        else
-          insert_into_file 'application.css', "*= require font-awesome\n", after: "*= require_self\n"
-        end
-      end
-
+    if switch_to_bootstrap
       inside "javascripts" do
         insert_into_file 'application.js', bootstrap_js_imports, after: "//= require jquery_ujs\n"
       end
