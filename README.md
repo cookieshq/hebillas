@@ -41,13 +41,14 @@ What to do after
 List of gems installed
 ----------------------
 
-Does not include dependencies of the gems listed!
+This list does not include dependencies of the gems listed!
 
 * [devise](https://github.com/plataformatec/devise) - optional
 * [active_admin](https://github.com/activeadmin/activeadmin) - optional. Available if you choose to install Devise. Because [`active_admin` does not yet support Devise 4](https://github.com/activeadmin/activeadmin/issues/4416), if you choose to install it, branch 3 of Devise will be installed. If not, the latest Devise version will be installed.
 * [haml-rails](https://github.com/indirect/haml-rails) - we'll convert all .erb files to .haml while generating the application
-* [bootstrap-sass](https://github.com/twbs/bootstrap-sass) - we'll remove bourbon, neat, refills and associated files.
-* [paperclip](https://github.com/thoughtbot/paperclip) - optional
+* [bootstrap-sass](https://github.com/twbs/bootstrap-sass) - we'll remove bourbon, neat, refills and associated files. Additionally we'll set up all the imports for in scss (``_bootstrap-custom.scss``) and js (``application.js``) so you can easily comment out any component you won't be using.
+* [font-awesome-rails](https://github.com/bokmann/font-awesome-rails) - we'll install and set it up properly for instant use.
+* [paperclip](https://github.com/thoughtbot/paperclip) - Our favourite image uploading and attachement. Optional
 * [roadie 2.4.3](https://github.com/Mange/roadie/tree/2-4-stable)
 
 On the **development** group:
