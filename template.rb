@@ -101,6 +101,7 @@ use_roadie             = ask_and_expect_yes("install Roadie")
 use_paperclip          = ask_and_expect_yes("install Paperclip")
 use_vcr                = ask_and_expect_yes("install VCR")
 use_guard_rspec        = ask_and_expect_yes("install Guard-Rspec")
+use_font_awesome       = ask_and_expect_yes("install Font Awesome")
 switch_to_haml         = ask_and_expect_yes("use HAML instead of ERB")
 switch_to_bootstrap    = ask_and_expect_yes("remove Bourbon/Neat and use Bootstrap")
 switch_to_coffeescript = ask_and_expect_yes("remove EC6 and install CoffeeScript")
@@ -139,6 +140,7 @@ end
 gem 'activeadmin', '~> 1.0.0.pre2' if use_active_admin
 gem 'paperclip' if use_paperclip
 gem 'roadie' if use_roadie
+gem 'font-awesome-rails' if use_font_awesome
 
 gem_group :development do
   gem 'mailcatcher', require: false
@@ -213,6 +215,14 @@ inside "app" do
         create_file "_state.scss",  ""
         create_file "_theme.scss",  ""
         copy_file   "email.scss"
+      end
+
+      if use_font_awesome
+        if switch_to_bootstrap
+          insert_into_file 'application.scss', "@import 'font-awesome';\n"
+        else
+          insert_into_file 'application.css', "*= require font-awesome\n", after: "*= require_self\n"
+        end
       end
 
       inside "javascripts" do
