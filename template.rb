@@ -80,6 +80,40 @@ def gitignore_tmuxinator
   end
 end
 
+def bootstrap_js_imports
+  <<-BSJSIMPORTS
+// Check which bootstrap modules to add here
+// https://github.com/twbs/bootstrap-sass/tree/master/assets/javascripts/bootstrap
+
+//= require bootstrap/affix
+//= require bootstrap/alert
+//= require bootstrap/button
+//= require bootstrap/carousel
+//= require bootstrap/collapse
+//= require bootstrap/dropdown
+//= require bootstrap/modal
+//= require bootstrap/tooltip
+//= require bootstrap/popover
+//= require bootstrap/scrollspy
+//= require bootstrap/tab
+//= require bootstrap/transition
+
+  BSJSIMPORTS
+end
+
+def bootstrap_message
+  <<-BOOTSTRAPMESSAGE
+
+We've imported all of Bootstrap. If you won't be using all of its features and to improve load time and performance, check:
+
+* app/assets/stylesheets/_bootstrap-custom.scss
+* app/assets/javascripts/application.js
+
+There you'll be able to comment out or remove unneded CSS/JSmodules
+
+  BOOTSTRAPMESSAGE
+end
+
 ######################################
 #                                    #
 # Prompt the user for options        #
@@ -208,7 +242,8 @@ inside "app" do
         remove_file "application.scss"
         copy_file   "application.scss"
         copy_file   "_variables.scss"
-        copy_file   "_bootstrap_variables_overrides.scss"
+        copy_file   "_bootstrap-variables-overrides.scss"
+        copy_file   "_bootstrap-custom.scss"
         create_file "_base.scss",   ""
         create_file "_layout.scss", ""
         create_file "_module.scss", ""
@@ -226,7 +261,7 @@ inside "app" do
       end
 
       inside "javascripts" do
-        insert_into_file 'application.js', "//= require bootstrap-sprockets\n", after: "//= require jquery_ujs\n"
+        insert_into_file 'application.js', bootstrap_js_imports, after: "//= require jquery_ujs\n"
       end
     end
   end
@@ -412,6 +447,10 @@ end
 if migrate_database
   run "bundle exec rake spec"
   say("\nWhat you see above is the first failing test of the project. It fails because you have no routes defined, so the root_path is not visitable. This means everything is set and you can start working (perhaps in making this test pass).\n\n", "\e[33m")
+end
+
+if switch_to_bootstrap
+  say(bootstrap_message, "\e[33m")
 end
 
 say("Restarting Spring\n", "\e[33m")
