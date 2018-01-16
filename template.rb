@@ -366,7 +366,7 @@ inside "spec" do
     copy_file "vcr.rb" if use_vcr
     copy_file "email_spec.rb"
     copy_file "paperclip.rb" if use_paperclip
-    copy_file "factory_girl.rb"
+    copy_file "factory_bot.rb"
   end
 end
 
